@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Map Marker</title>
+<script src="https://api.mapbox.com/mapbox-gl-js/v1.11.0/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v1.11.0/mapbox-gl.css" rel="stylesheet" />
+<style>
+  body { margin: 0; padding: 0; }
+  #map {position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+        <div id="map"></div>
+        <script>
+            //token
+            mapboxgl.accessToken = 'pk.eyJ1Ijoic3Rvcm1tYXRhIiwiYSI6ImNremVwMjhxZzA3ZmMydm16d2JlOG9oOGUifQ.My6NECnslilyi-VyQiOCIg';
+            const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [-71.101,42.358],   //centering map over lobby 7
+        zoom: 14
+    })
+            // bus data
+            async function routeData(){
+                const url = 'https://api-v3.mbta.com/vehicles?filter[route]=1&include=trip';
+                var res   = await fetch(url);
+                var json  = await res.json();
+                return json;  
+            }
+            // buses and markers
+            var buses      = [];
+            let BusMarkers = [];
+            // move bus markers
+            async function move(){
+                BusMarkers.forEach((marker) => marker.remove())
+                 var buses = await routeData();
+                // update all bus positions
+                buses.data.forEach(function(bus){
+                    var id   = bus.id;
+                    var lat  = bus.attributes.latitude;
+                    var long = bus.attributes.longitude;
+                    console.log(
+                        ' bus id:' + id + 
+                        ', bus latitude:' + lat +
+                        ', bus longitude:' + long
+                    );
+                    // add new markers to map
+                    const marker = new mapboxgl.Marker()
+                        .setLngLat([long,lat])
+                        .addTo(map)
+                        BusMarkers.push(marker) 
+                });
+                // timer
+                setTimeout(move, 5000);
+            }
+            move();
+        </script>
+    </body>
+</html>
